@@ -20,7 +20,17 @@ drugusage = read.csv("../../data/drug_consumption.csv")
 
 drug_mod = drugusage %>%
   select(Age, Alcohol) %>%
-  group_by(Age, Alcohol) %>%
+  mutate(
+    age_range = case_when(
+      Age == -0.95197 ~ "18-24",
+      Age == -0.07854 ~ "25-34",
+      Age == 0.49788 ~ "35-44",
+      Age == 1.09449 ~ "45-54",
+      Age == 1.82213 ~ "55-64",
+      Age == 2.59171 ~ "65+"
+    )
+  ) %>% 
+  group_by(age_range, Alcohol) %>%
   summarize(
       n = n()
   ) %>% pivot_wider(
@@ -30,6 +40,7 @@ drug_mod = drugusage %>%
     CL1, .after = CL0
   ) %>% 
   mutate(
+    n = CL0 + CL1 + CL2 + CL3 + CL4 + CL5 + CL6,
     usage_score = (CL1 * 1) + (CL2 * 2) + (CL3 * 3) + (CL4 * 4) + (CL5 * 5) + (CL6 * 6)
   )
                      
