@@ -1,0 +1,49 @@
+---
+title: "STAT 240: Project Draft"
+author: "Jon, Mai Tah, Michitake, Sophie"
+date: "Fall 2024"
+output: rmdformats::readthedown
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = TRUE,
+                      error = FALSE, fig.height = 4)
+library(tidyverse)
+source("../../scripts/ggprob.R")
+
+theme_set(theme_minimal())
+
+```
+
+```{r}
+drugusage = read.csv("../../data/drug_consumption.csv")
+
+drug_mod = drugusage %>%
+  select(Age, Alcohol) %>%
+  group_by(Age, Alcohol) %>%
+  summarize(
+      n = n()
+  ) %>% pivot_wider(
+    names_from = Alcohol, values_from = n, values_fill = 0
+  ) %>% 
+  relocate(
+    CL1, .after = CL0
+  ) %>% 
+  mutate(
+    usage_score = (CL1 * 1) + (CL2 * 2) + (CL3 * 3) + (CL4 * 4) + (CL5 * 5) + (CL6 * 6)
+  )
+                     
+```
+
+
+# Statistical Analysis
+
+## Initial Perspective
+
+```{r}
+
+
+ggplot(drug_mod, aes(x = Age, y = usage_score)) +
+  geom_line()
+```
+
