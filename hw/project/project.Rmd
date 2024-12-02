@@ -15,7 +15,7 @@ theme_set(theme_minimal())
 
 ```
 
-```{r}
+```{r, include=FALSE}
 drugusage = read.csv("../../data/drug_consumption.csv")
 
 drug_mod = drugusage %>%
@@ -44,6 +44,6 @@ drug_mod = drugusage %>%
 
 
 ggplot(drug_mod, aes(x = Age, y = usage_score)) +
-  geom_line()
+  geom_point()
 ```
 
