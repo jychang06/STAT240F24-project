@@ -18,38 +18,46 @@ theme_set(theme_minimal())
 ```{r, include=FALSE}
 drugusage = read.csv("../../data/drug_consumption.csv")
 
+# drug_mod = drugusage %>%
+#   select(Age, Alcohol) %>%
+#   group_by(Age, Alcohol) %>%
+#   summarize(
+#       n = n()
+#   ) %>% pivot_wider(
+#     names_from = Alcohol, values_from = n, values_fill = 0
+#   ) %>% 
+#   relocate(
+#     CL1, .after = CL0
+#   ) %>% 
+#   mutate(
+#     n = CL0 + CL1 + CL2 + CL3 + CL4 + CL5 + CL6,
+#     usage_score = (CL4) + (CL5) + (CL6),
+#     usage_proportion = usage_score/n
+#   )
+   
 drug_mod = drugusage %>%
   select(Age, Alcohol) %>%
-  group_by(Age, Alcohol) %>%
-  summarize(
-      n = n()
-  ) %>% pivot_wider(
-    names_from = Alcohol, values_from = n, values_fill = 0
-  ) %>% 
-  relocate(
-    CL1, .after = CL0
-  ) %>% 
-  mutate(
-    n = CL0 + CL1 + CL2 + CL3 + CL4 + CL5 + CL6,
-    usage_score = (CL1 * 1) + (CL2 * 2) + (CL3 * 3) + (CL4 * 4) + (CL5 * 5) + (CL6 * 6)
-  )
-   
-drug_mod2 = drugusage %>%
-  select(Age, Alcohol) %>%
-  group_by(Age, Alcohol) %>% 
+  group_by(Age) %>% 
   mutate(
     usage_score = case_when(
-      Alcohol == "CL0" ~ 0,
-      Alcohol == "CL1" ~ 1,
-      Alcohol == "CL2" ~ 2,
-      Alcohol == "CL3" ~ 3,
-      Alcohol == "CL4" ~ 4,
-      Alcohol == "CL5" ~ 5,
-      Alcohol == "CL6" ~ 6,
+      Alcohol == "CL0" ~ "nonregular",
+      Alcohol == "CL1" ~ "nonregular",
+      Alcohol == "CL2" ~ "nonregular",
+      Alcohol == "CL3" ~ "nonregular",
+      Alcohol == "CL4" ~ "regular",
+      Alcohol == "CL5" ~ "regular",
+      Alcohol == "CL6" ~ "regular",
     )
+  ) %>% group_by(Age, usage_score) %>% 
+  summarize(
+    n = n()
+  ) %>% pivot_wider(names_from = usage_score, values_from = n) %>% 
+  mutate(
+    n = regular + nonregular,
+    usage_prop = regular/n
   )
+  
 
-summary(lm(formula = usage_score ~ Age, data = drug_mod))
 ```
 
 
@@ -57,26 +65,29 @@ summary(lm(formula = usage_score ~ Age, data = drug_mod))
 
 ## Initial Perspective
 
-* First, we will set up our data by creating a variable "usage_score" to represent the usage level of a person, and we will use this variable for all future analysis.
+* First, we will set up our data to determine who is a regular drinker vs. who is an irregular drinker. We will categorize those who have drank alcohol in the past month as a regular drinker (CL4-CL6), and everyone who has not drank in the past year as an irregular drinker (CL0-CL3).
+
+* What is our estimate of the difference between the probability a person drinks regularly while young (18-24) and while in a different age group?
 
 ```{r echo=FALSE}
-ggplot(drug_mod2, aes(Age, usage_score)) +
-  geom_point() +
-  geom_smooth(color = "red", se = F, method = lm) +
-  labs(title = "Usage Score by Age Group", x = "Age Group", y = "Usage Score") +
-  theme_bw()
+x = drug_mod$regular
+n = drug_mod$n
+p = (x[1:6] + 1) / (n[1:6] + 2)
 
+pe = p[2:6] - p[1]
+
+se_single = sqrt(p[1:6] * (1 - p[1:6])/ n[1:6])
+
+se = sqrt(se_single[1]^2 + se_single[2:6]^2)
+
+conf_score = qnorm(.975)
+
+moe = conf_score * se[1:5]
+
+left = pe[1:5] - moe[1:5]
+right = pe[1:5] + moe[1:5]
+
+conf_int = tibble(difference = c("18-24 to 25-34", "18-24 to 35-44", "18-24 to 45-54", "18-24 to 55-64", "18-24 to 65+"), left = left, right = right)
 ```
 
-* Initially, the graph shows the two variables to be negatively correlated; however with this graph it is not very clear.
 
-```{r echo=FALSE}
-
-ggplot(drug_mod, aes(x = Age, y = usage_score)) +
-  geom_point() +
-  geom_smooth(color = "red", se = F, method = lm) + 
-  labs(title = "Total Usage Score by Age Group", x = "Age Group", y = "Total Usage Score") +
-  theme_bw()
-```
-
-* By finding the total usage score and plotting the total usage score per age group, the negative correlation becomes much more obvious.
