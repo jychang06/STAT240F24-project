@@ -20,17 +20,7 @@ drugusage = read.csv("../../data/drug_consumption.csv")
 
 drug_mod = drugusage %>%
   select(Age, Alcohol) %>%
-  mutate(
-    age_range = case_when(
-      Age == -0.95197 ~ "18-24",
-      Age == -0.07854 ~ "25-34",
-      Age == 0.49788 ~ "35-44",
-      Age == 1.09449 ~ "45-54",
-      Age == 1.82213 ~ "55-64",
-      Age == 2.59171 ~ "65+"
-    )
-  ) %>% 
-  group_by(age_range, Alcohol) %>%
+  group_by(Age, Alcohol) %>%
   summarize(
       n = n()
   ) %>% pivot_wider(
@@ -43,7 +33,23 @@ drug_mod = drugusage %>%
     n = CL0 + CL1 + CL2 + CL3 + CL4 + CL5 + CL6,
     usage_score = (CL1 * 1) + (CL2 * 2) + (CL3 * 3) + (CL4 * 4) + (CL5 * 5) + (CL6 * 6)
   )
-                     
+   
+drug_mod2 = drugusage %>%
+  select(Age, Alcohol) %>%
+  group_by(Age, Alcohol) %>% 
+  mutate(
+    usage_score = case_when(
+      Alcohol == "CL0" ~ 0,
+      Alcohol == "CL1" ~ 1,
+      Alcohol == "CL2" ~ 2,
+      Alcohol == "CL3" ~ 3,
+      Alcohol == "CL4" ~ 4,
+      Alcohol == "CL5" ~ 5,
+      Alcohol == "CL6" ~ 6,
+    )
+  )
+
+summary(lm(formula = usage_score ~ Age, data = drug_mod))
 ```
 
 
@@ -51,10 +57,26 @@ drug_mod = drugusage %>%
 
 ## Initial Perspective
 
-```{r}
+* First, we will set up our data by creating a variable "usage_score" to represent the usage level of a person, and we will use this variable for all future analysis.
 
+```{r echo=FALSE}
+ggplot(drug_mod2, aes(Age, usage_score)) +
+  geom_point() +
+  geom_smooth(color = "red", se = F, method = lm) +
+  labs(title = "Usage Score by Age Group", x = "Age Group", y = "Usage Score") +
+  theme_bw()
 
-ggplot(drug_mod, aes(x = Age, y = usage_score)) +
-  geom_point()
 ```
 
+* Initially, the graph shows the two variables to be negatively correlated; however with this graph it is not very clear.
+
+```{r echo=FALSE}
+
+ggplot(drug_mod, aes(x = Age, y = usage_score)) +
+  geom_point() +
+  geom_smooth(color = "red", se = F, method = lm) + 
+  labs(title = "Total Usage Score by Age Group", x = "Age Group", y = "Total Usage Score") +
+  theme_bw()
+```
+
+* By finding the total usage score and plotting the total usage score per age group, the negative correlation becomes much more obvious.
