@@ -2,7 +2,7 @@
 title: "projectDraft"
 author: "Mai Tah Lee"
 date: "2024-12-02"
-output: html_document
+output: rmdformats::readthedown
 ---
 
 ```{r setup, include=FALSE}
@@ -22,7 +22,7 @@ head(data, n = 3)
   * Variables are standardized numerically by variance of values in the dataset. 
   * For readability They need to be reinitialized with their actual values. 
 
-# Statistical Analysis
+# Preprocessing
 
 * 20241204-MTL:
 * I'm going to first look at the distributions of what drug each person consumes.
@@ -140,12 +140,22 @@ Data <- Data %>%
       . == "CL5" ~ 1,
       . == "CL6" ~ 1
     ))
+  ) %>% select( # removing the behavioral scores
+    -Nscore,
+    -Escore, 
+    -Oscore,
+    -Ascore,
+    -Cscore,
+    -Impulsive,
+    -SS
   )
 head(Data, 10)
 
 ```
 
-# Analysis
+# Proportion of Drug Consumption
+
+## Proportions of Drug Use Across All Age Groups
 
 ```{r}
 
@@ -164,21 +174,23 @@ cat("usage_prop_contents=\n", usage_prop)
 ```
 
 ```{r}
+# The overall proportions across all age groups
 drugProps = tibble(
   Drugs = drugs,
   usageProp = usage_prop
-)
-drugPropsArr = drugProps %>%
-  arrange(desc(drugProps$usageProp))
-drugPropsArr
+) %>% arrange(desc(usageProp))
+drugProps
 ```
 
+
+
 ```{r}
-ggplot(drugPropsArr, aes(x = Drugs, y = usageProp)) + 
+# The bar plot of the proportions of drug usage across all age groups
+ggplot(drugProps, aes(x = Drugs, y = usageProp)) + 
   geom_bar(stat="identity",fill='blue', alpha=0.5)+
   theme(axis.text.x = element_text(angle=45, hjust=1)) +
   labs(
-    title="Proportion of Drug Consumption Across Data-set",
+    title="Proportion of Drug Consumption Across All Age Groups",
     x = "Drug Consumed",
     y = "Proportion of Drug Consumption"
   )
@@ -186,7 +198,10 @@ ggplot(drugPropsArr, aes(x = Drugs, y = usageProp)) +
 ```
 > Accross our data the most used drugs are (1) chocolate, (2), caffiene, and (3) alcohol. 
 
-* Now I'm going to begin grouping by different age groups. 
+
+## Proportions of Drug Use by Different Age Groups
+
+
 
 ```{r}
 #It's best to filter the data by age group then take the proportions
@@ -207,17 +222,102 @@ for (val in age) {
 cat("nTotals_Variance=", length(nTotals), "\n")       # Number of unique age groups
 cat("ageGroups_Use_Variance=", length(ageGroups_Use), "\n") # Total rows
 
-group1 = ageGroups_Use[[1]]
-group1
+# create list containing bar plots
+barPlots = list()
+
+```
+
+## Age Group 1: 18-24
+
+```{r}
+
+# Group 1 proportion of drug usage 
+group1 = ageGroups_Use[[1]] # print group1 to see the dataframe contents
 n = nrow(group1) # observations of those within the groups
-n
+cat("group1_nTotal=", n, "\n")
 
 usage_prop = c() # list the the proportions of each drug used within the dataset
 for (val in drugs) {
-  drugSum = sum(Data[[val]])
-  drugProp = drugSum / nTotal
+  drugSum = sum(group1[[val]])
+  drugProp = drugSum / n
   usage_prop = append(usage_prop, drugProp)
 }
+
+# The overall proportions across first age group
+g1_drugProps = tibble(
+  Drugs = drugs,
+  usageProp = usage_prop
+) %>% arrange(desc(usageProp))
+g1_drugProps
+
+```
+
+```{r}
+# plot for the proportions of drug use among first age group
+g1_plot = ggplot(g1_drugProps, aes(x = Drugs, y = usageProp)) + 
+  geom_bar(stat="identity",fill='blue', alpha=0.5)+
+  theme(axis.text.x = element_text(angle=45, hjust=1)) +
+  labs(
+    title="Proportion of Drug Consumption Across the Age Group 18-24",
+    x = "Drug Consumed",
+    y = "Proportion of Drug Consumption"
+  )
+barPlots[[length(barPlots) + 1]] = g1_plot
+barPlots[[1]]
+```
+
+## Age Group 2: 25-34
+
+```{r}
+
+# Group 2 proportion of drug usage 
+group2 = ageGroups_Use[[2]] # print group1 to see the dataframe contents
+n = nrow(group2) # observations of those within the groups
+cat("group1_nTotal=", n, "\n")
+
+usage_prop = c() # list the the proportions of each drug used within the dataset
+for (val in drugs) {
+  drugSum = sum(group2[[val]])
+  drugProp = drugSum / n
+  usage_prop = append(usage_prop, drugProp)
+}
+
+# The overall proportions across first age group
+g2_drugProps = tibble(
+  Drugs = drugs,
+  usageProp = usage_prop
+) %>% arrange(desc(usageProp))
+g2_drugProps
+
+# plot for the proportions of drug use among second age group
+g2_plot = ggplot(g2_drugProps, aes(x = Drugs, y = usageProp)) + 
+  geom_bar(stat="identity",fill='blue', alpha=0.5)+
+  theme(axis.text.x = element_text(angle=45, hjust=1)) +
+  labs(
+    title="Proportion of Drug Consumption Across the Age Group 25-34",
+    x = "Drug Consumed",
+    y = "Proportion of Drug Consumption"
+  )
+barPlots[[length(barPlots) + 1]] = g2_plot
+barPlots[[2]]
+
+```
+
+## Age Group 3: 35-44
+
+* In total there are 6 different age groups, which requires assessing the each of the drug usage proportions among their group.
+* In total there should be 6 barplots to create, as well as 6 smooth plots to compare. We can also test different plots for better visuals. 
+
+
+```{r}
+# create a loop that can:
+# 1. create a dataframe with all the different proportions of drug usage on drug type
+# 2. create 
+group = NULL
+n = NULL
+
+
+
 
 ```
 
