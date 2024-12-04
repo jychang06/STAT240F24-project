@@ -80,18 +80,17 @@ drug_mod = drugusage %>%
 ```
 
 
-# Statistical Analysis
+## Statistical Analysis
 
-## Initial Perspective
+### Initial Perspective
 
 * First, we will set up our data to determine who is a regular drinker vs. who is an irregular drinker. We will categorize those who have drank alcohol in the past month as a regular drinker (CL4-CL6), and everyone who has not drank in the past year as an irregular drinker (CL0-CL3).
-
-* What is our estimate of the difference between the probability a person drinks regularly while young (18-24) and while in a different age group?
 
 ```{r echo=FALSE}
 x = drug_mod$regular
 n = drug_mod$n
 p = (x[1:6] + 1) / (n[1:6] + 2)
+sd = (p[1:6] * (1 - p[1:6])/n[1:6])
 
 pe = p[2:6] - p[1]
 
@@ -106,14 +105,47 @@ moe = conf_score * se[1:5]
 left = pe[1:5] - moe[1:5]
 right = pe[1:5] + moe[1:5]
 
-means = tibble(age = c("18-24", "25-34", "35-44", "45-54", "55-64", "65+"), x = x, n = n, p = p, se = se_single)
-conf_int = tibble(difference = c("18-24 to 25-34", "18-24 to 35-44", "18-24 to 45-54", "18-24 to 55-64", "18-24 to 65+"), left = left, right = right)
+# prop = tibble(age = c("18-24", "25-34", "35-44", "45-54", "55-64", "65+"), x = x, n = n, p = p, se = se_single)
+
+conf_int = tibble(difference = c("18-24 to 25-34", "18-24 to 35-44", "18-24 to 45-54", "18-24 to 55-64", "18-24 to 65+"), left = left, right = right) #unsure if we need confidence intervals to answer any of our proposed questions
 
 ggplot(drug_mod, aes(y = usage_prop, color = age)) +
   geom_boxplot() + 
   facet_wrap(facets = vars(age)) + 
-  labs(title = "Proportion of age group that drinks", y = "Proportion", color = "Age group")
+  labs(title = "Proportion of age group that drinks", y = "Proportion", color = "Age group") + theme_minimal()
 ```
 
-* 
+* The graphs show that the proportion decreases as the age group gets older, but we will conduct further analysis to make this conclusion more accurately.
 
+<!-- * What is our estimate of the difference between the probability a person drinks regularly while young (18-24) and while in a different age group? -->
+
+### Statistical Model
+
+We wish to explore if the average proportion of drinkers changes between age groups. To do this we will let: 
+
+- $X_i$ represent the statistical model of regular drinkers for $i$ age group.
+- $n_i$ represent the total number of cases for each age group.
+- $p_i$ represent the true proportion of drinkers for each age group.
+- $i$ represent the the groups with $1$ being ages 18-24, $2$ being 25-34, etc.
+
+and we will use these models.
+
+$$
+X_1 \sim \text{Binom}(n_1, p_1) \\
+X_2 \sim \text{Binom}(n_2, p_2) \\
+X_3 \sim \text{Binom}(n_3, p_3) \\
+X_4 \sim \text{Binom}(n_4, p_4) \\
+X_5 \sim \text{Binom}(n_5, p_5) \\
+X_6 \sim \text{Binom}(n_6, p_6) 
+$$
+We will assume that the BINS assumptions are met as such:
+- B: Each case is binomial, either a regular drinker or a non-regular drinker.
+- I: Each case is independent from each other.
+- N: The number of cases is predetermined.
+- S: The probability for each case remains the same.
+
+The assumption of independence is could be potentially not met since drinking tends to be a social activity, thus one regular drinker could affect another person.
+
+### Hypothesis
+
+*
