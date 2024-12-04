@@ -227,84 +227,6 @@ barPlots = list()
 
 ```
 
-## Age Group 1: 18-24
-
-```{r}
-
-# Group 1 proportion of drug usage 
-group1 = ageGroups_Use[[1]] # print group1 to see the dataframe contents
-n = nrow(group1) # observations of those within the groups
-cat("group1_nTotal=", n, "\n")
-
-usage_prop = c() # list the the proportions of each drug used within the dataset
-for (val in drugs) {
-  drugSum = sum(group1[[val]])
-  drugProp = drugSum / n
-  usage_prop = append(usage_prop, drugProp)
-}
-
-# The overall proportions across first age group
-g1_drugProps = tibble(
-  Drugs = drugs,
-  usageProp = usage_prop
-) %>% arrange(desc(usageProp))
-g1_drugProps
-
-```
-
-```{r}
-# plot for the proportions of drug use among first age group
-g1_plot = ggplot(g1_drugProps, aes(x = Drugs, y = usageProp)) + 
-  geom_bar(stat="identity",fill='blue', alpha=0.5)+
-  theme(axis.text.x = element_text(angle=45, hjust=1)) +
-  labs(
-    title="Proportion of Drug Consumption Across the Age Group 18-24",
-    x = "Drug Consumed",
-    y = "Proportion of Drug Consumption"
-  )
-barPlots[[length(barPlots) + 1]] = g1_plot
-barPlots[[1]]
-```
-
-## Age Group 2: 25-34
-
-```{r}
-
-# Group 2 proportion of drug usage 
-group2 = ageGroups_Use[[2]] # print group1 to see the dataframe contents
-n = nrow(group2) # observations of those within the groups
-cat("group1_nTotal=", n, "\n")
-
-usage_prop = c() # list the the proportions of each drug used within the dataset
-for (val in drugs) {
-  drugSum = sum(group2[[val]])
-  drugProp = drugSum / n
-  usage_prop = append(usage_prop, drugProp)
-}
-
-# The overall proportions across first age group
-g2_drugProps = tibble(
-  Drugs = drugs,
-  usageProp = usage_prop
-) %>% arrange(desc(usageProp))
-g2_drugProps
-
-# plot for the proportions of drug use among second age group
-g2_plot = ggplot(g2_drugProps, aes(x = Drugs, y = usageProp)) + 
-  geom_bar(stat="identity",fill='blue', alpha=0.5)+
-  theme(axis.text.x = element_text(angle=45, hjust=1)) +
-  labs(
-    title="Proportion of Drug Consumption Across the Age Group 25-34",
-    x = "Drug Consumed",
-    y = "Proportion of Drug Consumption"
-  )
-barPlots[[length(barPlots) + 1]] = g2_plot
-barPlots[[2]]
-
-```
-
-## Age Group 3: 35-44
-
 * In total there are 6 different age groups, which requires assessing the each of the drug usage proportions among their group.
 * In total there should be 6 barplots to create, as well as 6 smooth plots to compare. We can also test different plots for better visuals. 
 
@@ -312,13 +234,82 @@ barPlots[[2]]
 ```{r}
 # create a loop that can:
 # 1. create a dataframe with all the different proportions of drug usage on drug type
-# 2. create 
-group = NULL
-n = NULL
+# 2. create plots from the dataframes
+ageGroup_Prop_DFS = list() # will contain a data frame consisting of the drug consumption proportions by age group
 
+barPlot = list()
 
+for (i in seq(1,6)) {
+  group = ageGroups_Use[[i]] # should be the data frame of the current age group, excludes other age groups
+  currAge = age[i] # should be the string value; for example "18-24"
+  n = nrow(group) # the entire observations within each age group
+  usageProp = NULL
+  
+  
+  usage_prop = c()
+  for (val in drugs) {
+    drugSum = sum(group[[val]])
+    drugProp = drugSum / n
+    usage_prop = append(usage_prop, drugProp)
+  }
+  
+  prop_df = tibble(
+    Drugs = drugs,
+    usageProp = usage_prop 
+  ) 
+  ageGroup_Prop_DFS[[length(ageGroup_Prop_DFS) + 1]] = prop_df
+  
+  
+  plot = ggplot(prop_df, aes(x = Drugs, y = usageProp)) +
+    geom_bar(stat="identity",fill='blue', alpha=0.5)+
+  theme(axis.text.x = element_text(angle=45, hjust=1)) +
+  labs(
+    title=sprintf("Proportion of Drug Consumption Across the Age Group %s",  currAge),
+    x = "Drug Consumed",
+    y = "Proportion of Drug Consumption"
+  )
+  barPlot[[length(barPlot) + 1]] = plot
+}
 
 
 ```
+
+## The Data Frame of Proportions of Drug Consumption of each Age Group
+
+```{r}
+# The different data frames of each usageProp
+
+drugProps_df = tibble(
+    Drugs = drugs,
+    usageProp1 = ageGroup_Prop_DFS[[1]]$usageProp,
+    usageProp2 = ageGroup_Prop_DFS[[2]]$usageProp,
+    usageProp3 = ageGroup_Prop_DFS[[3]]$usageProp,
+    usageProp4 = ageGroup_Prop_DFS[[4]]$usageProp,
+    usageProp5 = ageGroup_Prop_DFS[[5]]$usageProp,
+    usageProp6 = ageGroup_Prop_DFS[[6]]$usageProp
+  ) 
+
+drugProps_df
+
+```
+
+```{r}
+for (i in seq(1, 6)) {
+  df = ageGroup_Prop_DFS[[i]] %>% arrange(desc(usageProp))
+  cat("Group=", i, "\n")
+  print(df)
+  cat("\n\n")
+}
+
+```
+
+```{r}
+for (i in seq(1, 6)) {
+  plot = barPlot[[i]]
+  print(plot)
+}
+```
+
+
 
 
