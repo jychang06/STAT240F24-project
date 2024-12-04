@@ -17,24 +17,32 @@ theme_set(theme_minimal())
 
 ```{r, include=FALSE}
 drugusage = read.csv("../../data/drug_consumption.csv")
-
-# drug_mod = drugusage %>%
-#   select(Age, Alcohol) %>%
-#   group_by(Age, Alcohol) %>%
-#   summarize(
-#       n = n()
-#   ) %>% pivot_wider(
-#     names_from = Alcohol, values_from = n, values_fill = 0
-#   ) %>% 
-#   relocate(
-#     CL1, .after = CL0
-#   ) %>% 
-#   mutate(
-#     n = CL0 + CL1 + CL2 + CL3 + CL4 + CL5 + CL6,
-#     usage_score = (CL4) + (CL5) + (CL6),
-#     usage_proportion = usage_score/n
-#   )
    
+# drug_data = drugusage %>%
+#   select(Age, Alcohol) %>%
+#   group_by(Age) %>% 
+#   mutate(
+#     usage_score = case_when(
+#       Alcohol == "CL0" ~ 0,
+#       Alcohol == "CL1" ~ 0,
+#       Alcohol == "CL2" ~ 0,
+#       Alcohol == "CL3" ~ 0,
+#       Alcohol == "CL4" ~ 1,
+#       Alcohol == "CL5" ~ 1,
+#       Alcohol == "CL6" ~ 1,
+#     ),
+#     age = case_when(
+#       Age == -0.95197 ~ "18-24",
+#       Age == -0.07854 ~ "25-34",
+#       Age == 0.49788 ~ "35-44",
+#       Age == 1.09449 ~ "45-54",
+#       Age == 1.82213 ~ "55-64",
+#       Age == 2.59171 ~ "65+"
+#     )
+#   )  %>% ungroup() %>% 
+#   relocate(age, .after = Age) %>%
+#   select(-Age)
+
 drug_mod = drugusage %>%
   select(Age, Alcohol) %>%
   group_by(Age) %>% 
@@ -51,12 +59,23 @@ drug_mod = drugusage %>%
   ) %>% group_by(Age, usage_score) %>% 
   summarize(
     n = n()
-  ) %>% pivot_wider(names_from = usage_score, values_from = n) %>% 
+  ) %>% pivot_wider(names_from = usage_score, values_from = n) %>%
+  ungroup() %>%
   mutate(
     n = regular + nonregular,
-    usage_prop = regular/n
-  )
-  
+    usage_prop = regular/n,
+    age = case_when(
+      Age == -0.95197 ~ "18-24",
+      Age == -0.07854 ~ "25-34",
+      Age == 0.49788 ~ "35-44",
+      Age == 1.09449 ~ "45-54",
+      Age == 1.82213 ~ "55-64",
+      Age == 2.59171 ~ "65+"
+    )
+  ) %>%
+  relocate(age, .after = Age) %>%
+  select(-Age)
+
 
 ```
 
@@ -87,7 +106,14 @@ moe = conf_score * se[1:5]
 left = pe[1:5] - moe[1:5]
 right = pe[1:5] + moe[1:5]
 
+means = tibble(age = c("18-24", "25-34", "35-44", "45-54", "55-64", "65+"), x = x, n = n, p = p, se = se_single)
 conf_int = tibble(difference = c("18-24 to 25-34", "18-24 to 35-44", "18-24 to 45-54", "18-24 to 55-64", "18-24 to 65+"), left = left, right = right)
+
+ggplot(drug_mod, aes(y = usage_prop, color = age)) +
+  geom_boxplot() + 
+  facet_wrap(facets = vars(age)) + 
+  labs(title = "Proportion of age group that drinks", y = "Proportion", color = "Age group")
 ```
 
+* 
 
