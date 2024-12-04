@@ -1,0 +1,224 @@
+---
+title: "projectDraft"
+author: "Mai Tah Lee"
+date: "2024-12-02"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, 
+                      error = TRUE, 
+                      warning = FALSE, 
+                      message = FALSE)
+library(tidyverse)
+```
+
+```{r}
+data = read_csv("drug_consumption.csv")
+head(data, n = 3)
+```
+
+# Prior Notes: 
+  * Variables are standardized numerically by variance of values in the dataset. 
+  * For readability They need to be reinitialized with their actual values. 
+
+# Statistical Analysis
+
+* 20241204-MTL:
+* I'm going to first look at the distributions of what drug each person consumes.
+* I'm also going to make a graph so that we can visually see the distribution of types of drug consumption between different persons. 
+* Then I'll attempt to run other analysis as necessary. 
+
+## Initialize Dataset for Readability and Other Uses
+
+```{r}
+# Saved list of age ranges for later use
+age = c("18-24", "25-34", "35-44", "45-54", "55-64", "65+")
+cat("age_range_variance=",length(age), "\n")
+
+# Save list of drugs for later use
+drugs = c("Alcohol", "Amphet", "Amyl", "Benzos", "Caff", "Cannabis", "Choc", "Coke", "Crack", "Ecstasy", "Heroin", "Ketamine", "Legalh", "LSD", "Meth","Mushrooms", "Nicotine", "Semer", "VSA")
+
+cat("total_drugs=",length(drugs))
+```
+
+```{r}
+# 20241204-MTL: I'm also going to clean the data into a new variable separate from
+#               the original data (so that the original data will still be
+#               accessible), it may be unnecessary and the process may be time
+#               consuming, but it will make it more readable for other uses if
+#               needed. It's better to have clean readable data vs numerical values
+#               that make it harder to distinguish its value in the data.  
+
+
+# ********************** Initialize Values **************************
+Data = data %>% 
+  mutate(
+    
+### Initialize Age
+    Age = case_when(
+      Age == -0.95197 ~ "18-24",
+      Age == -0.07854 ~ "25-34",
+      Age == 0.49788 ~ "35-44",
+      Age == 1.09449 ~ "45-54", 
+      Age == 1.82213 ~ "55-64", 
+      Age == 2.59171 ~ "65+"
+    ),
+    
+### Make Gender Binary (clean the data); 
+# **** 0==Male(-0.48246), 1==Female (0.48246) 
+    Gender = case_when(
+      Gender >= 0 ~ 1, # female
+      Gender < 0 ~ 0   # male
+    ),
+    
+### Initialize Education
+    Education = case_when(
+      Education == -2.43591 ~ "Left School Before 16 years", 
+      Education == -1.73790 ~ "Left School at 16 years", 
+      Education == -1.43719 ~ "Left School at 17 years", 
+      Education == -1.22751 ~ "Left School at 18 years", 
+      Education == -0.61113 ~ "Some College,No Certificate Or Degree", 
+      Education == -0.05921 ~ "Professional Certificate/ Diploma", 
+      Education == 0.45468 ~ "University Degree", 
+      Education == 1.16365 ~ "Masters Degree", 
+      Education == 1.98437 ~ "Doctorate Degree", 
+    ),
+
+### Initialize Country
+    Country = case_when(
+      Country == -0.09765 ~"Australia",
+      Country == 0.24923 ~"Canada",
+      Country == -0.46841 ~"New Zealand",
+      Country == -0.28519 ~"Other",
+      Country == 0.21128 ~"Republic of Ireland",
+      Country == 0.96082 ~"UK",
+      Country == -0.57009 ~"USA"
+    ),
+
+### Initialize Ethnicity
+    Ethnicity = case_when(
+      Ethnicity == -0.50212 ~ "Asian",
+      Ethnicity == -1.10702 ~ "Black",
+      Ethnicity == 1.90725 ~ "Mixed-Black/Asian",
+      Ethnicity == 0.12600 ~ "Mixed-White/Asian",
+      Ethnicity == -0.22166 ~ "Mixed-White/Black",
+      Ethnicity == 0.11440 ~ "Other",
+      Ethnicity == -0.31685 ~ "White"
+    )
+
+# The Behavior score values will not be initialized, their numbers
+# are standardized based on overall variance. (It will also be time consuming to relabel the values.)
+
+  )
+
+head(Data, 5)
+
+```
+```{r}
+### Initialize Consumption Values
+# *** Consumption is based on a rating scale from 0-6
+# *** @JonChang; 20241204-MTL:  I see that you've added a drug usage in your code
+#                               which regards those who selected > (greater than) 3 as 1: regular usage
+#                               and those < (less than) 3 are encoded as 0: non-regular. The non-regular
+#                               is a bit vague, as non-regular could mean more than the norm or less than
+#                               the norm. In this case, it would be better to just say less-regular, I'm
+#                               assuming that you plan to create a usage column to asses each individual
+#                               persons' consumption of a drug.
+
+# Consumption values will be encoded as 0:less-regular, 1:regular. 
+# Note a categorical values isn't truly necessary, also if the values are numerical
+# it simplifies coding the data. (you can just think of 0 as not regular, and 1 as regular)
+Data <- Data %>% 
+  mutate(
+    across(all_of(drugs), ~ case_when(     
+      . == "CL0" ~ 0,
+      . == "CL1" ~ 0,
+      . == "CL2" ~ 0,
+      . == "CL3" ~ 0,
+      . == "CL4" ~ 1,
+      . == "CL5" ~ 1,
+      . == "CL6" ~ 1
+    ))
+  )
+head(Data, 10)
+
+```
+
+# Analysis
+
+```{r}
+
+nTotal = nrow(Data) # total amount of rows or observations of persons
+cat("observations=", nTotal, "\n")  # should be 1885 obs.
+
+usage_prop = c() # list the the proportions of each drug used within the dataset
+for (val in drugs) {
+  drugSum = sum(Data[[val]])
+  drugProp = drugSum / nTotal
+  usage_prop = append(usage_prop, drugProp)
+}
+
+cat("usage_prop_variance=", length(usage_prop), "\n\n") # should expect to have 19 proportions
+cat("usage_prop_contents=\n", usage_prop)
+```
+
+```{r}
+drugProps = tibble(
+  Drugs = drugs,
+  usageProp = usage_prop
+)
+drugPropsArr = drugProps %>%
+  arrange(desc(drugProps$usageProp))
+drugPropsArr
+```
+
+```{r}
+ggplot(drugPropsArr, aes(x = Drugs, y = usageProp)) + 
+  geom_bar(stat="identity",fill='blue', alpha=0.5)+
+  theme(axis.text.x = element_text(angle=45, hjust=1)) +
+  labs(
+    title="Proportion of Drug Consumption Across Data-set",
+    x = "Drug Consumed",
+    y = "Proportion of Drug Consumption"
+  )
+  
+```
+> Accross our data the most used drugs are (1) chocolate, (2), caffiene, and (3) alcohol. 
+
+* Now I'm going to begin grouping by different age groups. 
+
+```{r}
+#It's best to filter the data by age group then take the proportions
+ageGroups_Use = list() 
+nTotals = c()          
+
+for (val in age) {
+  ageDrug <- Data %>% 
+    filter(Age == val)
+  
+  ageGroups_Use[[as.character(val)]] = ageDrug
+  
+  n = nrow(ageDrug)
+  nTotals = append(nTotals, n)
+}
+
+# Check variances
+cat("nTotals_Variance=", length(nTotals), "\n")       # Number of unique age groups
+cat("ageGroups_Use_Variance=", length(ageGroups_Use), "\n") # Total rows
+
+group1 = ageGroups_Use[[1]]
+group1
+n = nrow(group1) # observations of those within the groups
+n
+
+usage_prop = c() # list the the proportions of each drug used within the dataset
+for (val in drugs) {
+  drugSum = sum(Data[[val]])
+  drugProp = drugSum / nTotal
+  usage_prop = append(usage_prop, drugProp)
+}
+
+```
+
+
