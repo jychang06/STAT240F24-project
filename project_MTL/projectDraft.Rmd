@@ -2,46 +2,231 @@
 title: "Stat 240 Project Draft"
 author: "Mai Tah Lee, Jon Chang, Sophie Schrag, Michitake Kuwabara"
 date: "2024-12-05"
-output: html_document
+output: rmdformats::readthedown
 ---
 
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(
-	error = TRUE,
-	message = FALSE,
-	warning = FALSE,
-	include = FALSE
-)
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = TRUE,
+                      error = FALSE, fig.height = 4)
+
 library(tidyverse)
+source("../scripts/ggprob.R")
+
 theme_set(theme_minimal())
+
 ```
 
 ```{r include=FALSE}
 data = read_csv("drug_consumption.csv")
 ```
 
-# Stat 240 Final Project
+# Introduction
 
-## Introduction
-Drug usage and overdose are critical public health challenges, nearly less than 100,000 people die annually from drug overdoses in the United States(cite). The patterns of drug consumption across different age groups can help us better understand the context behind these numbers, which could further guide prevention and intervention efforts. This analysis explores how age groups correlates with the usage of various drugs, both legal (e.g., alcohol) and illegal (e.g., cannabis, ecstasy) and what the trend in different drug consumption proportions across different age groups. By exploring these relationships, we aim to identify which drugs are most commonly used within each age group and examine the characteristics associated with these trends. Ultimately, this analysis finds that the most consumed drugs were caffeine, chocolate (which can cause abnormal behaviors and other sensations that can be considered an addictive substance[cite]), and alcohol among individuals aged 18-24, and overall drug consumption decreases significantly with increased age.
+Drug usage and overdose are critical public health challenges, nearly less than 100,000 people die annually from drug overdoses in the United States (“Drug Overdose Death Statistics [2023]”). The patterns of drug consumption across different age groups can help us better understand the context behind these numbers, which could further guide prevention and intervention efforts. 
+
+This analysis explores how age groups correlates with the usage of various drugs, both legal (e.g., alcohol) and illegal (e.g., cannabis, ecstasy) and what the trend in different drug consumption proportions is across different age groups. By exploring these relationships, we aim to identify which drugs are most commonly used within each age group and examine the characteristics associated with these trends. 
+
+Ultimately, this analysis finds that the most consumed drugs were caffeine, chocolate (which can cause abnormal behaviors and other sensations that can be considered an addictive substance [“Chocolate: Food or Drug? - University of Arizona”]), and alcohol among individuals aged 18-24, and overall alcohol consumption decreases significantly with increased age.
 
 
-## Background
+# Background
 
-In order to answer our question, we need to know how much alcohol is being consumed by each age group from age 18 to 65 and up. The age groups consist of 18-24, 24-35, 35-44, 45-54, 55-64 and 65+. Our data set consists of data from one source that had this information 
+In order to answer our question, we need to know how much alcohol is being consumed by each age group from age 18 to 65 and up. The age groups consist of 18-24, 24-35, 35-44, 45-54, 55-64 and 65+. Our data set consists of data from one source that had this information:
 
-#### Age and Drug Use Data(Drug_consumption.csv)
-Our data came from a Drug consumption dataset(site source). This dataset had information on many different demographics and their consumption of various drug types, some legal and some illegal. The raw data contains many columns and 1885 rows (individuals); however for this study we only used columns that corresponded to age group (Age) and alcohol consumption (Alcohol). The Age column quantified the ages of all individuals so that each row or individual had a value across a broad range between -0.95 and 2.59,  that would put them in a certain age group. For example the value -0.95197 puts that individual into the age group 18-24 where 1.09449 puts them into 45-59. The Alcohol column placed each individual into one of 7 classes based on the frequency of their consumption. The classes included, CLO: never used; CL1: used over a decade ago, CL2: used in the last decade; CL3: used in the last year; CL4: used in the last month; CL5: used in the last week; and CL6 used in the last day. 
+## Age and Drug Use Data(Drug_consumption.csv)
 
-#### Combined Data
-These data can be joined together in a separate table, grouping individuals by their respective age group, and then a statistical analysis can be conducted to see if alcohol consumption varies among age groups. 
+Our data came from a Drug consumption dataset (Fehrman, Egan, and Mirkes 2015). This dataset had information on many different demographics and their consumption of various drug types, some legal and some illegal. The raw data contains many columns and almost 2000 rows (individuals); however for this study we only used columns that corresponded to age group (Age) and alcohol consumption (Alcohol). 
 
-```{r}
-# Add a graph Here
+The Age column quantified the ages of all individuals so that each row or individual had a value across a broad range between -0.95 and 2.59,  that would put them in a certain age group. For example the value -0.95197 puts that individual into the age group 18-24 where 1.09449 puts them into 45-59. 
+
+The Alcohol column placed each individual into one of 7 classes based on the frequency of their consumption. The classes included:
+
+-- CLO: never used
+
+-- CL1: used over a decade ago
+
+-- CL2: used in the last decade
+
+--  CL3: used in the last year
+
+-- CL4: used in the last month
+
+-- CL5: used in the last week
+
+-- CL6 used in the last day. 
+
+
+## Combined Data
+
+```{r echo=FALSE}
+#Initialize data
+drugusage = read.csv("drug_consumption.csv")
+
+drug_mod = drugusage %>%
+  
+  #Restructure dataframe for only age group and alcohol usage
+  select(Age, Alcohol) %>%
+  
+  
+  group_by(Age) %>% 
+  
+  mutate(
+    
+    usage_score = case_when(
+      Alcohol == "CL0" ~ "less_regular",
+      Alcohol == "CL1" ~ "less_regular",
+      Alcohol == "CL2" ~ "less_regular",
+      Alcohol == "CL3" ~ "less_regular",
+      Alcohol == "CL4" ~ "regular",
+      Alcohol == "CL5" ~ "regular",
+      Alcohol == "CL6" ~ "regular",
+    )
+  ) %>% 
+  
+  #Summarize regular vs less regular drinkers
+  group_by(Age, usage_score) %>% 
+  summarize(
+    n = n()
+  ) %>% 
+  
+  pivot_wider(names_from = usage_score, values_from = n) %>%
+  
+  ungroup() %>%
+
+  
+  mutate(
+    
+    #Add total number of cases
+    n = less_regular + regular,
+    
+    #Add usage proportion per age group
+    usage_prop = regular/n,
+    
+    #Simplify age ranges
+    Age = case_when(
+      Age == -0.95197 ~ "18-24",
+      Age == -0.07854 ~ "25-34",
+      Age == 0.49788 ~ "35-44",
+      Age == 1.09449 ~ "45-54",
+      Age == 1.82213 ~ "55-64",
+      Age == 2.59171 ~ "65+"
+    )
+  )
 ```
 
-## Analysis
-#### Initial Impressions
+This data can be joined together in a separate table, grouping individuals by their respective age group, and then a statistical analysis can be conducted to see if alcohol consumption varies among age groups. 
+
+# Analysis
 
 
+## Initial Impressions
+
+```{r echo=FALSE, warning = FALSE}
+ggplot(drug_mod, aes(x = Age, y = usage_prop, group = 1)) + 
+  geom_line(aes(color = "Alcohol Proportion"), linewidth = 1) + 
+  geom_point(aes(color = "Alcohol Proportion"), size = 3) + 
+  geom_smooth(
+    method = "lm",
+    aes(color = "Trend Line"), 
+    linewidth = 1
+  ) +
+  scale_color_manual(
+    values = c("Alcohol Proportion" = "blue", "Trend Line" = "red"),
+    name = "Legend"
+  ) +
+  labs(
+    title = "Alcohol Consumption Proportion by Age Group",
+    x = "Age Group",
+    y = "Proportion of Alcohol Consumption"
+  )
+```
+
+
+## Statistical Model
+
+We wish to explore if the average proportion of drinkers changes between age groups. To do this we will let: 
+
+- $X_i$ represent the statistical model of regular drinkers for $i$ age group.
+- $n_i$ represent the total number of cases for each age group.
+- $p_i$ represent the true proportion of drinkers for each age group.
+- $i$ represent the the groups with $1$ being ages 18-24, $2$ being 25-34, etc.
+
+and we will use these models.
+
+$$
+X_1 \sim \text{Binom}(n_1, p_1) \\
+X_2 \sim \text{Binom}(n_2, p_2) \\
+X_3 \sim \text{Binom}(n_3, p_3) \\
+X_4 \sim \text{Binom}(n_4, p_4) \\
+X_5 \sim \text{Binom}(n_5, p_5) \\
+X_6 \sim \text{Binom}(n_6, p_6) 
+$$
+We will assume that the BINS assumptions are met for each model as such:
+- B: Each case is binomial, either a regular drinker or a non-regular drinker.
+- I: Each case is independent from each other.
+- N: The number of cases is predetermined.
+- S: The probability for each case remains the same.
+
+The assumption of independence is could be potentially not met since drinking tends to be a social activity, thus one regular drinker could affect another person.
+
+## Hypothesis
+
+* With these models we will begin conducting the testing of the hypothesis
+
+$$
+H_0 : X_1 - X_2 \text{ through } X_6 = 0
+$$
+$$
+H_a : X_1 - X_2 \text{ through } X_6 > 0
+$$
+using a two-sample z-test for a difference in proportions.
+
+
+```{r echo=FALSE}
+#Testing of hypotheses
+
+x = drug_mod$regular
+n = drug_mod$n
+x1 = x[1]
+n1 = n[1]
+
+# Sample proportions of drinkers 
+
+pbar = (x1 + x[2:6]) / (n1 + n[2:6])
+
+
+# Null distribution
+
+gnorm(0,1)
+
+
+# Calculating test statistic for each difference in proportions
+
+numerator = (x1 / n1) - (x[2:6] / n[2:6]) #p-hat[1] - p-hat[2 to 6]
+
+denominator = sqrt( ((pbar * (1 - pbar)) / n1) + ((pbar * (1 - pbar)) /  n[2:6]) )
+
+test_stat = numerator/denominator
+
+# Test statistic on null distribution
+gnorm(0,1) +
+  geom_vline(xintercept = test_stat, color = "red")
+
+# Calculating p-values
+
+p_values = tibble(Age_comparison = c("18-24 to 25-34", "18-24 to 35-44", "18-24 to 45-54", "18-24 to 55-64", "18-24 to 65+"), p_value = 2*(1 - pnorm(test_stat, mean = 0, sd = 1)))
+
+p_values = p_values %>% 
+  mutate(
+    significant = p_value < 0.05
+  )
+
+```
+
+
+## Interpretation
+
+> We fail to find significant evidence that the probability of people consuming alcohol is different between age group 18-24 and each other age group, EXCEPT age group 65+ (p = 0.00942), using a standard significance score of p = 0.05. However, for age group 54-65, there is some potential significance because the p-score was 0.06056 
+
+# Discussion
