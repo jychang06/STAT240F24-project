@@ -16,55 +16,52 @@ theme_set(theme_minimal())
 ```
 
 ```{r, include=FALSE}
+#Initialize data
 drugusage = read.csv("../../data/drug_consumption.csv")
-   
-# drug_data = drugusage %>%
-#   select(Age, Alcohol) %>%
-#   group_by(Age) %>% 
-#   mutate(
-#     usage_score = case_when(
-#       Alcohol == "CL0" ~ 0,
-#       Alcohol == "CL1" ~ 0,
-#       Alcohol == "CL2" ~ 0,
-#       Alcohol == "CL3" ~ 0,
-#       Alcohol == "CL4" ~ 1,
-#       Alcohol == "CL5" ~ 1,
-#       Alcohol == "CL6" ~ 1,
-#     ),
-#     age = case_when(
-#       Age == -0.95197 ~ "18-24",
-#       Age == -0.07854 ~ "25-34",
-#       Age == 0.49788 ~ "35-44",
-#       Age == 1.09449 ~ "45-54",
-#       Age == 1.82213 ~ "55-64",
-#       Age == 2.59171 ~ "65+"
-#     )
-#   )  %>% ungroup() %>% 
-#   relocate(age, .after = Age) %>%
-#   select(-Age)
+
 
 drug_mod = drugusage %>%
+  
+  #Restructure dataframe for only age group and alcohol usage
   select(Age, Alcohol) %>%
+  
+  
   group_by(Age) %>% 
+  
   mutate(
+    
     usage_score = case_when(
-      Alcohol == "CL0" ~ "nonregular",
-      Alcohol == "CL1" ~ "nonregular",
-      Alcohol == "CL2" ~ "nonregular",
-      Alcohol == "CL3" ~ "nonregular",
+      Alcohol == "CL0" ~ "less_regular",
+      Alcohol == "CL1" ~ "less_regular",
+      Alcohol == "CL2" ~ "less_regular",
+      Alcohol == "CL3" ~ "less_regular",
       Alcohol == "CL4" ~ "regular",
       Alcohol == "CL5" ~ "regular",
       Alcohol == "CL6" ~ "regular",
     )
-  ) %>% group_by(Age, usage_score) %>% 
+  ) %>% 
+  
+  #Summarize regular vs less regular drinkers
+  group_by(Age, usage_score) %>% 
   summarize(
     n = n()
-  ) %>% pivot_wider(names_from = usage_score, values_from = n) %>%
+  ) %>% 
+  
+  pivot_wider(names_from = usage_score, values_from = n) %>%
+  
   ungroup() %>%
+
+  
   mutate(
-    n = regular + nonregular,
+    
+    #Add total number of cases
+    n = less_regular + regular,
+    
+    #Add usage proportion per age group
     usage_prop = regular/n,
-    age = case_when(
+    
+    #Simplify age ranges
+    Age = case_when(
       Age == -0.95197 ~ "18-24",
       Age == -0.07854 ~ "25-34",
       Age == 0.49788 ~ "35-44",
@@ -72,46 +69,23 @@ drug_mod = drugusage %>%
       Age == 1.82213 ~ "55-64",
       Age == 2.59171 ~ "65+"
     )
-  ) %>%
-  relocate(age, .after = Age) %>%
-  select(-Age)
+  )
 
 
 ```
+# Introduction
 
+# Background
 
-## Statistical Analysis
+# Statistical Analysis
 
-### Initial Perspective
+## Initial Thoughts
 
-* First, we will set up our data to determine who is a regular drinker vs. who is an irregular drinker. We will categorize those who have drank alcohol in the past month as a regular drinker (CL4-CL6), and everyone who has not drank in the past year as an irregular drinker (CL0-CL3).
+* First, we will set up a graph to take a look at the proportion of people that drink within each age group.
 
 ```{r echo=FALSE}
-x = drug_mod$regular
-n = drug_mod$n
-p = (x[1:6] + 1) / (n[1:6] + 2)
-sd = (p[1:6] * (1 - p[1:6])/n[1:6])
-
-pe = p[2:6] - p[1]
-
-se_single = sqrt(p[1:6] * (1 - p[1:6])/ n[1:6])
-
-se = sqrt(se_single[1]^2 + se_single[2:6]^2)
-
-conf_score = qnorm(.975)
-
-moe = conf_score * se[1:5]
-
-left = pe[1:5] - moe[1:5]
-right = pe[1:5] + moe[1:5]
-
-# prop = tibble(age = c("18-24", "25-34", "35-44", "45-54", "55-64", "65+"), x = x, n = n, p = p, se = se_single)
-
-conf_int = tibble(difference = c("18-24 to 25-34", "18-24 to 35-44", "18-24 to 45-54", "18-24 to 55-64", "18-24 to 65+"), left = left, right = right) #unsure if we need confidence intervals to answer any of our proposed questions
-
-ggplot(drug_mod, aes(y = usage_prop, color = age)) +
-  geom_boxplot() + 
-  facet_wrap(facets = vars(age)) + 
+ggplot(drug_mod, aes(y = usage_prop, x = Age)) +
+  geom_bar(stat = "identity", fill = "lightblue", color = "darkgray") + 
   labs(title = "Proportion of age group that drinks", y = "Proportion", color = "Age group") + theme_minimal()
 ```
 
@@ -119,7 +93,7 @@ ggplot(drug_mod, aes(y = usage_prop, color = age)) +
 
 <!-- * What is our estimate of the difference between the probability a person drinks regularly while young (18-24) and while in a different age group? -->
 
-### Statistical Model
+## Statistical Model
 
 We wish to explore if the average proportion of drinkers changes between age groups. To do this we will let: 
 
@@ -138,7 +112,7 @@ X_4 \sim \text{Binom}(n_4, p_4) \\
 X_5 \sim \text{Binom}(n_5, p_5) \\
 X_6 \sim \text{Binom}(n_6, p_6) 
 $$
-We will assume that the BINS assumptions are met as such:
+We will assume that the BINS assumptions are met for each model as such:
 - B: Each case is binomial, either a regular drinker or a non-regular drinker.
 - I: Each case is independent from each other.
 - N: The number of cases is predetermined.
@@ -146,6 +120,60 @@ We will assume that the BINS assumptions are met as such:
 
 The assumption of independence is could be potentially not met since drinking tends to be a social activity, thus one regular drinker could affect another person.
 
-### Hypothesis
+## Hypothesis
 
-*
+* With these models we will begin conducting the testing of the hypothesis
+
+$$
+H_0 : X_1 - X_2 \text{ through } X_6 = 0
+$$
+$$
+H_a : X_1 - X_2 \text{ through } X_6 > 0
+$$
+using a two-sample z-test for a difference in proportions.
+
+```{r}
+#Testing of hypotheses
+
+drug_mod
+
+x = drug_mod$regular
+n = drug_mod$n
+x1 = x[1]
+n1 = n[1]
+
+# Sample proportions of drinkers 
+
+pbar = (x1 + x[2:6]) / (n1 + n[2:6])
+
+
+# Null distribution
+
+gnorm(0,1)
+
+
+# Calculating test statistic for each difference in proportions
+
+numerator = (x1 / n1) - (x[2:6] / n[2:6]) #p-hat[1] - p-hat[2 to 6]
+
+denominator = sqrt( ((pbar * (1 - pbar)) / n1) + ((pbar * (1 - pbar)) /  n[2:6]) )
+
+test_stat = numerator/denominator
+test_stat
+
+# Test statistic on null distribution
+gnorm(0,1) +
+  geom_vline(xintercept = test_stat, color = "red")
+
+# Calculating p-values
+
+p_values = tibble(Age_comparison = c("18-24 to 25-34", "18-24 to 35-44", "18-24 to 45-54", "18-24 to 55-64", "18-24 to 65+"), p_value = 2*(1 - pnorm(test_stat, mean = 0, sd = 1)))
+
+```
+
+
+## Interpretation
+
+> We fail to find significant evidence that the probability of people consuming alcohol is different between age group 18-24 and each other age group, EXCEPT age group 65+ (p = 0.00942), using a standard significance score of p = 0.05. However, for age group 54-65, there is some potential significance because the p-score was 0.06056 
+
+# Discussion
