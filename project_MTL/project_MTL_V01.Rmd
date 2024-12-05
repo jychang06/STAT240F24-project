@@ -11,6 +11,7 @@ knitr::opts_chunk$set(echo = TRUE,
                       warning = FALSE, 
                       message = FALSE)
 library(tidyverse)
+theme_set(theme_minimal())
 ```
 
 ```{r}
@@ -293,6 +294,8 @@ drugProps_df
 
 ```
 
+## Arranged Drug Consumption Proportion by Group
+
 ```{r}
 for (i in seq(1, 6)) {
   df = ageGroup_Prop_DFS[[i]] %>% arrange(desc(usageProp))
@@ -303,6 +306,8 @@ for (i in seq(1, 6)) {
 
 ```
 
+## Bar Plots of Drug Consumption Proprotion by Age Group
+
 ```{r}
 for (i in seq(1, 6)) {
   plot = barPlot[[i]]
@@ -311,5 +316,344 @@ for (i in seq(1, 6)) {
 ```
 
 
+> For the most part, from looking at all these bar graphs, we can see that the most consistent drug usage would be caffiene, chocolate and Alcohol. I would say caffiene and chocolate aren't as harmful compared
+to other drugs like alcohol. Therefore, are focus could be simply just alcohol. 
+
+# Proportion of Drug Consumption by Age Group
+
+## Alcohol Usage Across Age groups
+
+* Setting up alcohol proportions by age group
+
+```{r}
+
+alc = drugProps_df %>% filter(Drugs == "Alcohol")
+alc = t(alc)
+alc = alc[-1]
+
+alc_prop = tibble(
+  Age_Group = age
+  ) %>% mutate(
+    Alcohol_Prop = as.numeric(alc)
+  )
+
+alc_prop
+```
+
+```{r}
+# plot the alcohol consumption proportion by age group
+ggplot(alc_prop, aes(x = Age_Group, y = Alcohol_Prop, group = 1)) + 
+  geom_line(aes(color = "Alcohol Proportion"), size = 1) + 
+  geom_point(aes(color = "Alcohol Proportion"), size = 3) + 
+  geom_smooth(
+    method = "lm",
+    aes(color = "Trend Line"), 
+    size = 1
+  ) +
+  scale_color_manual(
+    values = c("Alcohol Proportion" = "blue", "Trend Line" = "red"),
+    name = "Legend"
+  ) +
+  labs(
+    title = "Alcohol Consumption Proportion by Age Group",
+    x = "Age Group",
+    y = "Proportion of Alcohol Consumption"
+  ) + 
+  theme_minimal()
+```
+
+> This is an obious downward trend in drug consumption as age group increases. 
+
+## Amphet Usage Across Age groups
+
+```{r}
+
+amp = drugProps_df %>% filter(Drugs == "Amphet")
+amp = t(amp)
+amp = amp[-1]
+
+amp_prop = tibble(
+  Age_Group = age
+  ) %>% mutate(
+    Amphet_Prop = as.numeric(amp)
+  )
+
+amp_prop
+```
+
+```{r}
+# plot amphet usage by age group
+ggplot(amp_prop, aes(x = Age_Group, y = Amphet_Prop, group = 1)) + 
+  geom_line(aes(color = "Amphet Proportion"), size = 1) + 
+  geom_point(aes(color = "Amphet Proportion"), size = 3) + 
+  geom_smooth(
+    method = "lm",
+    aes(color = "Trend Line"), 
+    size = 1
+  ) +
+  scale_color_manual(
+    values = c("Amphet Proportion" = "blue", "Trend Line" = "red"),
+    name = "Legend"
+  ) +
+  labs(
+    title = "Amphet Consumption Proportion by Age Group",
+    x = "Age Group",
+    y = "Proportion of Amphet Consumption"
+  ) + 
+  theme_minimal()
+
+```
+
+* create loop to automate plotting for all drugs
+
+```{r}
+drug_plots = list()
+
+for (drug in drugs) {
+  # Extract the proportion of the current drug across age groups
+  drug_data = drugProps_df %>% filter(Drugs == drug)
+  drug_data = t(drug_data)  # Transpose the data
+  drug_data = drug_data[-1]  # Remove the header row
+  
+  # Create data frame for the current drug
+  drug_prop = tibble(
+    Age_Group = age
+  ) %>% mutate(
+    Proportion = as.numeric(drug_data)
+  )
+  
+  # Create the plot
+  plot = ggplot(drug_prop, aes(x = Age_Group, y = Proportion, group = 1)) +
+    geom_line(aes(color = "Drug Proportion"), size = 1) +  # Use static label for legend
+    geom_point(aes(color = "Drug Proportion"), size = 3) +
+    geom_smooth(
+      method = "lm",
+      aes(color = "Trend Line"), 
+      size = 1
+    ) +
+    scale_color_manual(
+      values = c(
+        "Drug Proportion" = "blue", 
+        "Trend Line" = "red"
+      ),
+      name = "Legend"
+    ) +
+    labs(
+      title = paste(drug, "Consumption Proportion by Age Group"),
+      x = "Age Group",
+      y = paste("Proportion of", drug, "Consumption")
+    ) + 
+    theme_minimal()
+  
+  # Add the plot to the list
+  drug_plots[[drug]] = plot
+}
+```
+
+## All Plots for Proportions of Specific Drug Consumption by Age group
+
+```{r}
+for (drug in drugs) {
+  print(drug_plots[[drug]])
+}
+
+```
+
+> From all these graphs, the correlation with age group is that as age increases, drug consumption decreases, this is very intuitive and and obvious trend. 
 
 
+# Statistical Analysis
+
+## Primary Question: How does age group correlate with drug usage?
+
+* Purpose: Summarize drug consumption across age groups
+* Approach, calculate the standard deviation, and frequency distribution of drug usage (regular vs. less-regular) within each age group.
+
+```{r}
+summary_stats <- Data %>%
+  group_by(Age) %>%
+  summarise(across(all_of(drugs), list(mean = mean, sd = sd)))
+summary_stats
+```
+
+### Correlation Analysis
+
+* Quantify the relationship between age and drug usage
+* Approach: treat age groups as numeric and calculate the correlation between age and drug proportions for each drug
+
+```{r}
+correlation_results = list()
+age_numeric = c(1, 2, 3, 4, 5, 6)  # Numeric encoding for age groups
+for (drug in drugs) {
+  drug_data = drugProps_df %>% filter(Drugs == drug)
+  correlation_results[[drug]] = cor.test(age_numeric, as.numeric(drug_data[2:7]))
+}
+
+
+for (drug in drugs) {
+  print(drug)
+  print(correlation_results[[drug]])
+}
+
+```
+
+```{r}
+# fisher transformation
+# the proportion of variance explained
+r = cor(age_numeric, alc_prop$Alcohol_Prop)
+r_squared = r^2
+cat("Correlation (r) =", r, "R-squared =", r_squared, "\n")
+
+
+```
+
+## Proportion Confidence Intervals (Agresti-Coull Method)
+
+* application: For each drug, compute a 95% Agresti-Coull confidence interval for the proportion of regular users across all age groups.
+
+```{r}
+drugProps = drugProps %>%
+  mutate(
+    n = nTotal,
+    X = usageProp * nTotal,
+    p_ac = (X + 2) / (n + 4),
+    se_ac = sqrt((p_ac * (1 - p_ac)) / (n + 4)),
+    lower = p_ac - qnorm(0.975) * se_ac,
+    upper = p_ac + qnorm(0.975) * se_ac
+  )
+drugProps %>%
+  select(Drugs, usageProp, lower, upper)
+
+drugProps
+
+```
+
+
+## Hypothesis Testing For Single Proportion
+
+* Test whether the proportion of alcohol users differs from a hypothesized value 
+* Define the null and alternative Hypothesis.
+* compute the p-value and interpret the results
+* The average proportion across all drugs in the dataset is approximately 0.242
+
+```{r}
+p0 <- 0.24  # hypothesized proportion
+X <- drugProps %>% filter(Drugs == "Alcohol") %>% pull(usageProp) * nTotal
+n <- nTotal
+phat <- X / n
+z <- (phat - p0) / sqrt((p0 * (1 - p0)) / n)
+p_value <- 2 * (1 - pnorm(abs(z)))  # two-tailed test
+cat("Z =", z, "P-value =", p_value, "\n")
+
+```
+
+
+## Difference in Proportions Between Age Groups
+
+```{r}
+group1 = ageGroup_Prop_DFS[[1]]  # e.g., Age group 18-24
+group2 = ageGroup_Prop_DFS[[6]]  # e.g., Age group 65+
+
+p1 = group1 %>% filter(Drugs == "Alcohol") %>% pull(usageProp)
+p2 = group2 %>% filter(Drugs == "Alcohol") %>% pull(usageProp)
+n1 = nTotals[1]
+n2 = nTotals[6]
+p_pool = (p1 * n1 + p2 * n2) / (n1 + n2)
+z = (p1 - p2) / sqrt(p_pool * (1 - p_pool) * (1/n1 + 1/n2))
+p_value = 2 * (1 - pnorm(abs(z)))  # two-tailed test
+cat("Z =", z, "P-value =", p_value, "\n")
+
+```
+
+
+## Linear Regression Analysis
+
+* Analyze the relationship between the number of drugs consumed and age using linear regression
+* Fit a linear model using lm and evaluate slope significance.
+
+```{r}
+alc_prop = alc_prop %>%
+  mutate(Age_Group = as.numeric(factor(Age_Group, levels = c("18-24", "25-34", "35-44", "45-54", "55-64", "65+"))))
+
+
+lm_model = lm(Alcohol_Prop ~ as.numeric(Age_Group), data = alc_prop)
+summary(lm_model)
+confint(lm_model)
+
+```
+> Overall, the relationship between age group and alcohol consumption proportion. The results show a statistically significant negative association (𝑝=0.0307 p=0.0307), with alcohol consumption decreasing by approximately 3.94% for each increase in age group. The model explains about 66% of the variance in alcohol consumption (𝑅2=0.66R 2=0.66).
+
+```{r}
+# Scatter plot with regression line
+ggplot(alc_prop, aes(x = as.numeric(Age_Group), y = Alcohol_Prop)) +
+  geom_point(color = "blue", size = 3) +  # Scatter points
+  geom_smooth(method = "lm", se = TRUE, color = "red") +  # Regression line with confidence interval
+  labs(
+    title = "Alcohol Consumption Proportion by Age Group",
+    x = "Age Group (Numeric)",
+    y = "Alcohol Consumption Proportion"
+  ) +
+  theme_minimal() +
+  scale_x_continuous(
+    breaks = 1:6,  # Match numeric Age_Group to actual groups
+    labels = c("18-24", "25-34", "35-44", "45-54", "55-64", "65+")
+  )
+```
+
+
+# Hypothesis Testing For Multiple Drugs
+
+```{r}
+# Define hypothesized proportion (p0)
+p0 <- 0.24
+
+hypothesis_results <- drugProps %>%
+  mutate(
+    SE = sqrt((p0 * (1 - p0)) / n),  # Standard error
+    Z = (usageProp - p0) / SE,      # Z-statistic
+    p_value = 2 * (1 - pnorm(abs(Z))), # Two-tailed p-value
+    significant = ifelse(p_value < 0.05, "Yes", "No") # Significance
+  ) %>%
+  select(Drugs, usageProp, Z, p_value, significant)
+
+
+hypothesis_results
+```
+
+```{r}
+# plot for visuals
+
+ggplot(hypothesis_results, aes(x = reorder(Drugs, -usageProp), y = usageProp)) +
+  geom_bar(stat = "identity", fill = "blue", alpha = 0.7) +
+  geom_hline(yintercept = p0, linetype = "dashed", color = "red") +
+  labs(
+    title = "Observed Proportions vs. Hypothesized Value",
+    x = "Drug",
+    y = "Proportion of Users"
+  ) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
+
+## Comparison Across Age Group Visualization
+
+```{r}
+# Prepare data for faceted plot
+long_data <- drugProps_df %>%
+  pivot_longer(cols = starts_with("usageProp"), names_to = "Age_Group", values_to = "Proportion") %>%
+  mutate(Age_Group = factor(Age_Group, labels = age))
+
+# Faceted line plots for each drug
+ggplot(long_data, aes(x = Age_Group, y = Proportion, group = 1)) +
+  geom_line(color = "blue") +
+  geom_point(size = 2) +
+  facet_wrap(~Drugs, scales = "free_y") +
+  labs(
+    title = "Drug Consumption Proportions by Age Group",
+    x = "Age Group",
+    y = "Proportion of Consumption"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
