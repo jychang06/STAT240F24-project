@@ -169,6 +169,11 @@ gnorm(0,1) +
 
 p_values = tibble(Age_comparison = c("18-24 to 25-34", "18-24 to 35-44", "18-24 to 45-54", "18-24 to 55-64", "18-24 to 65+"), p_value = 2*(1 - pnorm(test_stat, mean = 0, sd = 1)))
 
+p_values = p_values %>% 
+  mutate(
+    significant = p_value < 0.05
+  )
+
 ```
 
 
