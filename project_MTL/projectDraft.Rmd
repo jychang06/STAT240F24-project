@@ -142,6 +142,7 @@ ggplot(drug_mod, aes(x = Age, y = usage_prop, group = 1)) +
   )
 ```
 
+From the graph we can see a clear and intuitive downward trend in alcohol consumption as age increases, but we will have to do a statistical analysis to say this conclusively.
 
 ## Statistical Model
 
@@ -195,12 +196,6 @@ n1 = n[1]
 
 pbar = (x1 + x[2:6]) / (n1 + n[2:6])
 
-
-# Null distribution
-
-gnorm(0,1)
-
-
 # Calculating test statistic for each difference in proportions
 
 numerator = (x1 / n1) - (x[2:6] / n[2:6]) #p-hat[1] - p-hat[2 to 6]
@@ -209,9 +204,7 @@ denominator = sqrt( ((pbar * (1 - pbar)) / n1) + ((pbar * (1 - pbar)) /  n[2:6])
 
 test_stat = numerator/denominator
 
-# Test statistic on null distribution
-gnorm(0,1) +
-  geom_vline(xintercept = test_stat, color = "red")
+
 
 # Calculating p-values
 
@@ -222,6 +215,12 @@ p_values = p_values %>%
     significant = p_value < 0.05
   )
 
+```
+
+```{r include=FALSE}
+# Test statistic on null distribution
+gnorm(0,1) +
+  geom_vline(xintercept = test_stat, color = "red")
 ```
 
 
