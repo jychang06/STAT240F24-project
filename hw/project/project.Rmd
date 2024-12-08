@@ -388,7 +388,7 @@ ggplot(alc_prop, aes(x = Age_Group, y = Alcohol_Prop)) +
 
 
 
-* From the graph we can see a clear and intuitive downward trend in alcohol consumption as age increases, but we will have to do a statistical analysis to say this conclusively.
+> From the graph we can see a clear and intuitive downward trend in alcohol consumption as age increases, but we will have to do a statistical analysis to say this conclusively.
 
 <!-- * What is our estimate of the difference between the probability a person drinks regularly while young (18-24) and while in a different age group? -->
 
@@ -472,8 +472,18 @@ p_values = p_values %>%
 
 ```
 
+#### Significance Between Age Group 18-24 and other Age Groups
 
-## The Relationship Between Age Group and Alcohol Consumption Proportion
+```{r echo=FALSE}
+# Z test and p-values comparing age group 1 and other age groups.
+p_values
+```
+
+## Interpretation
+
+> We fail to find significant evidence that the probability of people consuming alcohol is different between age group 18-24 and each other age group, EXCEPT age group 65+ (p = 0.00942), using a standard significance score of p = 0.05. However, for age group 54-65, there is some potential significance because the p-score was 0.06056 
+
+### The Relationship Between Age Group and Alcohol Consumption Proportion
 
 ```{r include=FALSE}
 
@@ -490,7 +500,7 @@ confint(lm_model)
 
 #### Forumla Using a Linear Regression Model
 
-$$Alcohol_Prop=0.91618−0.03943⋅AgeGroup+ϵ$$
+$$AlcoholConsumptionProp=0.91618−0.03943⋅AgeGroup+ϵ$$
 
 $$Intercept(\beta_0) = 0.91618$$
 $$Slope (\beta_1) = 0.03943$$
@@ -499,6 +509,9 @@ $$R^2 = 0.7282$$
 $$R^2 (adjusted) = 0.6603$$
 
 $$Confidence Interval (\beta_1) = (-0.0729, -0.0060)$$
+$$\epsilon = residualError $$
+
+$$p\_value = 0.0307 $$
 
 ```{r echo=FALSE}
 # view plots for proportion of specific drug consumption by age group
@@ -506,18 +519,7 @@ drug_plots[[1]]
 
 ```
 
-> The results show a statistically significant negative association (p=0.0307), with alcohol consumption decreasing by approximately 3.94% for each increase in age group. The model explains about 66% of the variance in alcohol consumption. The confidence interval supports that alcohol consumption decreases as age group increases. 
-
-#### Significance Between Age Group 18-24 and other Age Groups
-
-```{r echo=FALSE}
-# Z test and p-values comparing age group 1 and other age groups.
-p_values
-```
-
-## Interpretation
-
-> We fail to find significant evidence that the probability of people consuming alcohol is different between age group 18-24 and each other age group, EXCEPT age group 65+ (p = 0.00942), using a standard significance score of p = 0.05. However, for age group 54-65, there is some potential significance because the p-score was 0.06056 
+> The results show a statistically significant negative association (p=0.0307), with alcohol consumption decreasing by approximately 3.94% for each increase in age group. The model explains about 66% (R^2) of the variance in alcohol consumption. The confidence interval ([-0.0729, -0.0060]) supports that alcohol consumption decreases as age group increases. 
 
 # Discussion
 
