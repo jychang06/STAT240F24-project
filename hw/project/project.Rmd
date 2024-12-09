@@ -156,9 +156,9 @@ Ultimately, this analysis finds that the most consumed drugs were caffeine, choc
 
 In order to answer our question, we need to know how much alcohol is being consumed by each age group from age 18 to 65 and up. The age groups consist of 18-24, 24-35, 35-44, 45-54, 55-64 and 65+. Our data set consists of data from one source that had this information.
 
-## Age and Drug Use Data(Drug_consumption.csv)
+## Age and Drug Use Data (https://doi.org/10.24432/C5TC7S)
 
-Our data came from a Drug consumption dataset (Fehrman, Egan, and Mirkes 2015). This dataset had information on many different demographics and their consumption of various drug types, some legal and some illegal. The raw data contains many columns and almost 2000 rows (individuals); however for this study we only used columns that corresponded to age group (Age) and alcohol consumption (Alcohol). 
+Our data came from a Drug consumption dataset (Fehrman, Egan, and Mirkes 2015, https://doi.org/10.24432/C5TC7S). This dataset had information on many different demographics and their consumption of various drug types, some legal and some illegal. The raw data contains many columns and almost 2000 rows (individuals); however for this study we only used columns that corresponded to age group (Age) and alcohol consumption (Alcohol). 
 The Age column quantified the ages of all individuals so that each row or individual had a value across a broad range between -0.95 and 2.59,  that would put them in a certain age group. For example the value -0.95197 puts that individual into the age group 18-24 where 1.09449 puts them into 45-59. 
 The Alcohol column placed each individual into one of 7 classes based on the frequency of their consumption. The classes included:
 
@@ -231,7 +231,7 @@ ggplot(drugProps, aes(x = Drugs, y = usageProp)) +
 
 ```
 
-> The bar graph here shows the different proportions of drug consumption across all age groups. What's seen throughout is that chocolate, caffiene, and alcohol are constantly high across all age groups. 
+> The bar graph here shows the different proportions of drug consumption across all age groups. What's seen throughout is that chocolate, caffeine, and alcohol are constantly high across all age groups. 
 
 ```{r echo=FALSE}
 
