@@ -146,11 +146,12 @@ drug_mod = Data %>%
 
 # Introduction
 
-Drug usage and overdose are critical public health challenges, nearly less than 100,000 people die annually from drug overdoses in the United States (“Drug Overdose Death Statistics [2023]”). The patterns of drug consumption across different age groups can help us better understand the context behind these numbers, which could further guide prevention and intervention efforts. 
+Drug usage and overdose are critical public health challenges, with nearly 100,000 people dying annually from drug overdoses in the United States (“Drug Overdose Death Statistics [2023]”). Understanding patterns of substance consumption across different age groups can provide crucial insights to guide prevention and intervention efforts.
 
-This analysis explores the differences in regular drug consumption across age groups and what their trends are. By exploring these, we aim to identify which age groups should heavily be focused on when considering the most common drug consumed. 
+This analysis focuses specifically on what the regular alcohol consumption across age groups is and examines trends to identify which age groups require the most attention in public health initiatives.
 
-Ultimately, this analysis finds that the most consumed drugs were caffeine, chocolate (which can cause abnormal behaviors and other sensations that can be considered an addictive substance [“Chocolate: Food or Drug? - University of Arizona”]), and alcohol among individuals aged 18-24. The premises of this analysis will focus on alcohol consumption as it is intuitively less harmless than the two. Overall we found that alcohol consumption decreases significantly with increased age as the data is further analyzed.
+The findings reveal that alcohol is one of the most commonly consumed substances among individuals aged 18-24. While other substances like caffeine and chocolate are also widely consumed, this analysis centers on alcohol due to its significant public health implications. Overall we found that alcohol consumption decreases significantly with increased age as the data is further analyzed.
+
 
 # Background
 
@@ -538,8 +539,6 @@ Additional analysis could be done investigating whether any of the other drugs w
 
 # References
 
-1. “Chocolate: Food or Drug? - University of Arizona.” N.p., n.d. Web. 4 Dec. 2024. <https://experts.arizona.edu/en/publications/chocolate-food-or-drug>.
+1. “Drug Overdose Death Statistics [2023]: Opioids, Fentanyl & More.” NCDAS. N.p., n.d. Web. 2 Dec. 2024, https://drugabusestatistics.org/drug-overdose-deaths/.
 
-2. “Drug Overdose Death Statistics [2023]: Opioids, Fentanyl & More.” NCDAS. N.p., n.d. Web. 2 Dec. 2024, https://drugabusestatistics.org/drug-overdose-deaths/.
-
-3. Fehrman, Elaine, Vincent Egan, and Evgeny Mirkes. "Drug Consumption (Quantified)." UCI Machine Learning Repository, 2015, https://doi.org/10.24432/C5TC7S. 
+2. Fehrman, Elaine, Vincent Egan, and Evgeny Mirkes. "Drug Consumption (Quantified)." UCI Machine Learning Repository, 2015, https://doi.org/10.24432/C5TC7S. 
