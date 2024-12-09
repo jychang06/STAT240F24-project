@@ -473,7 +473,7 @@ pbar = (x1 + x[2:6]) / (n1 + n[2:6])
 
 # Null distribution
 
-gnorm(0,1)
+gnorm(0,1) + annotate("text", x=-2, y=0.3, label = "Null distribution")
 
 
 # Calculating test statistic for each difference in proportions
@@ -486,7 +486,8 @@ test_stat = numerator/denominator
 
 # Test statistic on null distribution
 gnorm(0,1) +
-  geom_vline(xintercept = test_stat, color = "red") + annotate("text", x = test_stat + 0.17, y = 0.27, label = round(test_stat, 2), size = 3)
+  geom_vline(xintercept = test_stat, color = "red") + annotate("text", x = test_stat + 0.17, y = 0.27, label = round(test_stat, 2), size = 3) +
+  annotate("text", x=-2, y=0.3, label = "Test Statistic")
 
 # Calculating p-values
 
