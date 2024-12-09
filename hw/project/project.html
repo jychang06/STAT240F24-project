@@ -1320,15 +1320,14 @@ statistical analysis to say this conclusively.</p>
 <p>We wish to explore if the average proportion of drinkers changes
 between age groups. To do this we will let:</p>
 <ul>
-<li><span class="math inline">\(X_i\)</span> represent the statistical
-model of regular drinkers for <span class="math inline">\(i\)</span> age
-group.</li>
-<li><span class="math inline">\(n_i\)</span> represent the total number
-of cases for each age group.</li>
-<li><span class="math inline">\(p_i\)</span> represent the true
-proportion of drinkers for each age group.</li>
-<li><span class="math inline">\(i\)</span> represent the the groups with
-<span class="math inline">\(1\)</span> being ages 18-24, <span class="math inline">\(2\)</span> being 25-34, etc.</li>
+<li><p><span class="math inline">\(X_i\)</span> represent the
+statistical model of regular drinkers for <span class="math inline">\(i\)</span> age group.</p></li>
+<li><p><span class="math inline">\(n_i\)</span> represent the total
+number of cases for each age group.</p></li>
+<li><p><span class="math inline">\(p_i\)</span> represent the true
+proportion of drinkers for each age group.</p></li>
+<li><p><span class="math inline">\(i\)</span> represent the the groups
+with <span class="math inline">\(1\)</span> being ages 18-24, <span class="math inline">\(2\)</span> being 25-34, etc.</p></li>
 </ul>
 <p>and we will use these models.</p>
 <p><span class="math display">\[
@@ -1338,11 +1337,16 @@ X_3 \sim \text{Binom}(n_3, p_3) \\
 X_4 \sim \text{Binom}(n_4, p_4) \\
 X_5 \sim \text{Binom}(n_5, p_5) \\
 X_6 \sim \text{Binom}(n_6, p_6)
-\]</span> We will assume that the BINS assumptions are met for each
-model as such: - B: Each case is binomial, either a regular drinker or a
-non-regular drinker. - I: Each case is independent from each other. - N:
-The number of cases is predetermined. - S: The probability for each case
-remains the same.</p>
+\]</span></p>
+<p>We will assume that the BINS assumptions are met for each model as
+such:</p>
+<ul>
+<li><p>B: Each case is binomial, either a regular drinker or a
+non-regular drinker.</p></li>
+<li><p>I: Each case is independent from each other.</p></li>
+<li><p>N: The number of cases is predetermined.</p></li>
+<li><p>S: The probability for each case remains the same.</p></li>
+</ul>
 <p>The assumption of independence is could be potentially not met since
 drinking tends to be a social activity, thus one regular drinker could
 affect another person.</p>
