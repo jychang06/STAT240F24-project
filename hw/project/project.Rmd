@@ -146,7 +146,11 @@ drug_mod = Data %>%
 
 # Introduction
 
-Drug usage and overdose are critical public health challenges, nearly less than 100,000 people die annually from drug overdoses in the United States (“Drug Overdose Death Statistics [2023]”). The patterns of drug consumption across different age groups can help us better understand the context behind these numbers, which could further guide prevention and intervention efforts. This analysis explores the differences in regular alcohol consumption across age groups and what their trends are. By exploring these, we aim to identify which age groups should heavily be focused on when considering alcohol consumption. Ultimately, this analysis finds that the most consumed drugs were caffeine, chocolate (which can cause abnormal behaviors and other sensations that can be considered an addictive substance [“Chocolate: Food or Drug? - University of Arizona”]), and alcohol among individuals aged 18-24. Overall drug consumption decreases significantly with increased age.
+Drug usage and overdose are critical public health challenges, nearly less than 100,000 people die annually from drug overdoses in the United States (“Drug Overdose Death Statistics [2023]”). The patterns of drug consumption across different age groups can help us better understand the context behind these numbers, which could further guide prevention and intervention efforts. 
+
+This analysis explores the differences in regular drug consumption across age groups and what their trends are. By exploring these, we aim to identify which age groups should heavily be focused on when considering the most common drug consumed. 
+
+Ultimately, this analysis finds that the most consumed drugs were caffeine, chocolate (which can cause abnormal behaviors and other sensations that can be considered an addictive substance [“Chocolate: Food or Drug? - University of Arizona”]), and alcohol among individuals aged 18-24. The premises of this analysis will focus on alcohol consumption as it is intuitively less harmless than the two. Overall we found that alcohol consumption decreases significantly with increased age as the data is further analyzed.
 
 # Background
 
@@ -227,7 +231,7 @@ ggplot(drugProps, aes(x = Drugs, y = usageProp)) +
 
 ```
 
-> The bar graph shows that caffeine, chocolate, and alcohol are the most consumed substances, indicating their widespread use due to accessibility and social norms. Illegal drugs like crack and heroin have much lower proportions. Intuitively, the main focus will be analying the differences in alcohol consumption despite caffeine and chocolate being the most consumed as it is not as harmful compared to alcohol.
+> The bar graph here shows the different proportions of drug consumption across all age groups. What's seen throughout is that chocolate, caffiene, and alcohol are constantly high across all age groups. 
 
 ```{r echo=FALSE}
 
