@@ -430,7 +430,7 @@ We will assume that the BINS assumptions are met for each model as such:
 
 - S: The probability for each case remains the same.
 
-The assumption of independence is could be potentially not met since drinking tends to be a social activity, thus one regular drinker could affect another person.
+The assumption of independence could potentially not be met since drinking tends to be a social activity, thus one regular drinker could affect another person.
 
 ## Hypothesis
 
